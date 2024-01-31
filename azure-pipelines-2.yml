@@ -1,0 +1,58 @@
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+jobs:
+- job: BuildAndTest
+  displayName: 'Build and Test'
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: NuGetToolInstaller@1
+
+  - task: NuGetCommand@2
+    inputs:
+      restoreSolution: '$(solution)'
+
+  - task: VSBuild@1
+    inputs:
+      solution: '$(solution)'
+      msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+
+  - task: VSTest@2
+    inputs:
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+
+# Add more jobs if needed (e.g., deployment job)
+# - job: Deploy
+#   displayName: 'Deploy'
+#   pool:
+#     vmImage: 'windows-latest'
+#   steps:
+#     # ... your deployment steps ...
+
+# Add more jobs as needed
+# ...
+
+# Add dependencies between jobs if needed
+# dependencies:
+# - BuildAndTest
+# - Deploy
+# ...
+
+
